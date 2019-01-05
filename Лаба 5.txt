@@ -1,0 +1,42 @@
+public class Solution {
+
+private static int counter = 0;
+private static final int THREAD_COUNT = 10;
+
+public static void main(final String[] args) throws InterruptedException {
+
+    for (int i = 0; i < THREAD_COUNT; i++) {
+        Printer printer = new Printer(i, Arrays.toString(Character.toChars(i + 'a')));
+        Runnable task = () -> {
+            while (!Thread.currentThread().isInterrupted())
+                print(printer);
+        };
+        new Thread(task).start();
+
+    }
+
+    while (!Thread.currentThread().isInterrupted())
+        TimeUnit.SECONDS.sleep(10);
+}
+
+private static void print(Printer printer) {
+    while (!Thread.currentThread().isInterrupted()) {
+        synchronized (Solution.class) {
+            if (counter == printer.id) {
+                counter = (counter + 1) % THREAD_COUNT;
+                System.out.println(printer.word);
+            }
+        }
+    }
+}
+
+
+private static class Printer {
+    private final int id;
+    private final String word;
+
+    Printer(int id, String word) {
+        this.id = id;
+        this.word = word;
+    }
+}
